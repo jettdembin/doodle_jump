@@ -1,0 +1,30 @@
+
+
+.grid {
+    background-color: aliceblue;
+    width: 400px;
+    height:  400px;
+    position: relative;
+    font-size: 100px;
+    text-align: center;
+}
+
+.doodler {
+    width: 50px;
+    height: 50px;
+    left: 50%;
+    bottom: 5%;
+    transform: translate(-50%);
+    position: absolute;
+    background-image: url('dashboard-banner.jpg');
+}
+
+.platform {
+    width: 100px;
+    height: 20px;
+    bottom: 0;
+    left: 50%;
+    transform: translate(-50%);
+    background-color: black;
+    position: absolute;
+}

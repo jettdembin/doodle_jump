@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Create and position the doodler
   function createDoodler() {
-    doodler.classList.add("doodler");
+    doodler.classList.add("doodler", "shadow-sm");
     doodler.style.bottom = "5%";
     grid.appendChild(doodler);
     document.querySelector(".counter").innerHTML = 0;
@@ -26,7 +26,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     initialPlatforms.forEach((position) => {
       const platform = document.createElement("div");
-      platform.classList.add("platform", "first-platform");
+      platform.classList.add("platform", "first-platform", "shadow-lg");
       platform.style.left = position.left;
       platform.style.bottom = position.bottom;
       grid.appendChild(platform);
@@ -38,7 +38,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function addPlatform() {
     const platformTypes = ["BLINK", "NORMAL"];
     const platform = document.createElement("div");
-    platform.classList.add("platform");
+    platform.classList.add("platform", "shadow-lg");
     grid.appendChild(platform);
 
     const { left } = generateRandomPosition();

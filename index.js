@@ -2,72 +2,44 @@ document.addEventListener("DOMContentLoaded", () => {
   const grid = document.querySelector(".grid");
   const doodler = document.createElement("div");
   let isGameOver = false;
+  let startTimer = true;
+  let intervals = [];
+
+  let counter = 0;
 
   // Create and position the doodler
   function createDoodler() {
     doodler.classList.add("doodler");
     doodler.style.bottom = "5%";
     grid.appendChild(doodler);
+    document.querySelector(".counter").innerHTML = counter;
     console.log(doodler, "doodler");
 
-    fall(doodler, 35, 1); // Doodler starts falling
+    setTimeout(() => {
+      doodler.style.bottom = `${parseInt(doodler.style.bottom) + 20}%`;
+      fall(doodler, 35, 1); // Doodler starts falling
+    }, 300);
   }
 
-  // Create an initial platform at the start of the game
+  // Create initial platforms programmatically
   function createInitialPlatforms() {
-    const platform = document.createElement("div");
-    platform.classList.add("platform");
-    platform.classList.add("first-platform");
-    platform.style.left = "50%";
-    platform.style.bottom = "0%";
+    const initialPlatforms = [
+      { left: "50%", bottom: "0%" },
+      { left: "10%", bottom: "40%" },
+      { left: "30%", bottom: "21%" },
+      { left: "50%", bottom: "60%" },
+      { left: "62%", bottom: "75%" },
+      { left: "83%", bottom: "90%" },
+    ];
 
-    setTimeout(() => {
-      platform.style.display = "none";
-    }, 300);
-
-    const platform2 = document.createElement("div");
-    platform2.classList.add("platform");
-    platform2.classList.add("first-platform");
-    platform2.style.left = "10%";
-    platform2.style.bottom = "40%";
-
-    const platform3 = document.createElement("div");
-    platform3.classList.add("platform");
-    platform3.classList.add("first-platform");
-    platform3.style.left = "30%";
-    platform3.style.bottom = "21%";
-
-    const platform4 = document.createElement("div");
-    platform4.classList.add("platform");
-    platform4.classList.add("first-platform");
-    platform4.style.left = "50%";
-    platform4.style.bottom = "60%";
-
-    const platform5 = document.createElement("div");
-    platform5.classList.add("platform");
-    platform5.classList.add("first-platform");
-    platform5.style.left = "62%";
-    platform5.style.bottom = "75%";
-
-    const platform6 = document.createElement("div");
-    platform6.classList.add("platform");
-    platform6.classList.add("first-platform");
-    platform6.style.left = "83%";
-    platform6.style.bottom = "90%";
-
-    grid.appendChild(platform);
-    grid.appendChild(platform2);
-    grid.appendChild(platform3);
-    grid.appendChild(platform4);
-    grid.appendChild(platform5);
-    grid.appendChild(platform6);
-
-    fall(platform, 80, 1);
-    fall(platform2, 80, 1);
-    fall(platform3, 80, 1);
-    fall(platform4, 80, 1);
-    fall(platform5, 80, 1);
-    fall(platform6, 80, 1);
+    initialPlatforms.forEach((position) => {
+      const platform = document.createElement("div");
+      platform.classList.add("platform", "first-platform");
+      platform.style.left = position.left;
+      platform.style.bottom = position.bottom;
+      grid.appendChild(platform);
+      fall(platform, Math.floor(Math.random() * 51) + 50, 1);
+    });
   }
 
   // Create a new platform at a random position
@@ -80,12 +52,13 @@ document.addEventListener("DOMContentLoaded", () => {
     platform.style.left = `${left}%`;
     platform.style.bottom = "100%";
 
-    fall(platform, 80, 1); // Platform starts falling
+    fall(platform, Math.floor(Math.random() * 51) + 50, 1);
   }
 
-  // Continuously add new platforms every 3 seconds
+  // Continuously add new platforms every 1.5 seconds
   function addPlatforms() {
-    setInterval(addPlatform, 1500);
+    let platformInterval = setInterval(addPlatform, 1500);
+    intervals.push(platformInterval); // Save interval ID for clearing later
   }
 
   // Generate a random position for platforms
@@ -112,46 +85,61 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Function to convert percentage values to pixels
-  function convertToPixels(percent, containerDimension) {
-    return (parseInt(percent) / 100) * containerDimension;
+  // Check if doodler is on a platform
+  function isOnPlatform() {
+    const platforms = document.querySelectorAll(".platform");
+    const doodlerRect = doodler.getBoundingClientRect();
+
+    return [...platforms].some((platform) => {
+      const platformRect = platform.getBoundingClientRect();
+      const isDoodlerOnPlatform =
+        doodlerRect.bottom === platformRect.top &&
+        doodlerRect.left + doodlerRect.width > platformRect.left &&
+        doodlerRect.left < platformRect.left + platformRect.width;
+
+      return isDoodlerOnPlatform;
+    });
   }
 
   // Make an object fall at the specified interval
   function fall(obj, time, fallAmount) {
-    setInterval(() => {
-      let bottom = obj.style.bottom || 5;
+    const fallInterval = setInterval(() => {
+      let bottom = obj.style.bottom || "5%";
       if (parseInt(bottom) > 5) {
+        if (obj.classList.contains("doodler") && isOnPlatform()) {
+          doodler.style.bottom = `${parseInt(doodler.style.bottom) + 45}%`;
+          counter++;
+          document.querySelector(".counter").innerHTML = counter;
+          console.log(counter, "counter");
+          return;
+        }
         obj.style.bottom = `${parseInt(bottom) - fallAmount}%`;
       } else if (
         obj.classList.contains("platform") &&
         !obj.classList.contains("doodler")
       ) {
-        obj.style.display = "none";
+        obj.style.display = "none"; // Remove platform when out of view
+        clearInterval(fallInterval); // Clear interval when platform is removed
+      } else if (
+        obj.classList.contains("doodler") &&
+        !isOnPlatform() &&
+        startTimer
+      ) {
+        startTimer = false;
+      } else if (!startTimer) {
+        clearInterval(fallInterval);
+        endGame(); // Trigger game over when doodler hits the bottom
       }
-
-      // Collision detection
-      function checkForCollisionWithDoodler() {
-        const platforms = document.querySelectorAll(".platform");
-        const doodlerRect = doodler.getBoundingClientRect(); // Get doodler's position and size in pixels
-
-        [...platforms].forEach((platform) => {
-          const platformRect = platform.getBoundingClientRect(); // Get platform's position and size in pixels
-
-          // Check if the doodler's bottom is colliding with the platform's top
-          const isDoodlerOnPlatform =
-            doodlerRect.bottom === platformRect.top &&
-            doodlerRect.left + doodlerRect.width > platformRect.left &&
-            doodlerRect.left < platformRect.left + platformRect.width;
-
-          if (isDoodlerOnPlatform) {
-            // If doodler is on the platform, make it jump
-            doodler.style.bottom = `${parseInt(doodler.style.bottom) + 20}%`;
-          }
-        });
-      }
-      checkForCollisionWithDoodler();
     }, time);
+    intervals.push(fallInterval); // Store interval IDs
+  }
+
+  // End game and clear all intervals
+  function endGame() {
+    isGameOver = true;
+    intervals.forEach(clearInterval); // Clear all intervals
+    alert("Game Over!");
+    location.reload(); // Reload the page
   }
 
   // Handle key events to control movement
@@ -167,6 +155,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Initialize the game by creating the doodler and platforms
   createDoodler();
-  createInitialPlatforms(); // Create the first platform when the game starts
+  createInitialPlatforms(); // Create the first platforms when the game starts
   addPlatforms(); // Add new platforms over time
 });

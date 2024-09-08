@@ -13,12 +13,11 @@ document.addEventListener("DOMContentLoaded", () => {
     doodler.style.bottom = "5%";
     grid.appendChild(doodler);
     document.querySelector(".counter").innerHTML = counter;
-    console.log(doodler, "doodler");
 
-    setTimeout(() => {
-      doodler.style.bottom = `${parseInt(doodler.style.bottom) + 20}%`;
-      fall(doodler, 35, 1); // Doodler starts falling
-    }, 300);
+    // setTimeout(() => {
+    //   doodler.style.bottom = `${parseInt(doodler.style.bottom) + 40}%`;
+    //   fall(doodler, 20, 1); // Doodler starts falling
+    // }, 300);
   }
 
   // Create initial platforms programmatically
@@ -77,61 +76,107 @@ document.addEventListener("DOMContentLoaded", () => {
     doodler.style.left = `${parseInt(left) + 10}%`;
   }
 
-  function moveUp() {
-    let doodlerBottom = parseInt(doodler.style.bottom) || 5;
-    let doodlerLeft = parseInt(doodler.style.left) || 50;
-    if (parseInt(doodlerBottom) < 90) {
-      doodler.style.bottom = `${parseInt(doodlerBottom) + 30}%`;
-    }
-  }
-
-  // Check if doodler is on a platform
-  function isOnPlatform() {
-    const platforms = document.querySelectorAll(".platform");
-    const doodlerRect = doodler.getBoundingClientRect();
-
-    return [...platforms].some((platform) => {
-      const platformRect = platform.getBoundingClientRect();
-      const isDoodlerOnPlatform =
-        doodlerRect.bottom === platformRect.top &&
-        doodlerRect.left + doodlerRect.width > platformRect.left &&
-        doodlerRect.left < platformRect.left + platformRect.width;
-
-      return isDoodlerOnPlatform;
-    });
-  }
-
   // Make an object fall at the specified interval
   function fall(obj, time, fallAmount) {
     const fallInterval = setInterval(() => {
       let bottom = obj.style.bottom || "5%";
       if (parseInt(bottom) > 5) {
-        if (obj.classList.contains("doodler") && isOnPlatform()) {
-          doodler.style.bottom = `${parseInt(doodler.style.bottom) + 45}%`;
-          counter++;
-          document.querySelector(".counter").innerHTML = counter;
-          console.log(counter, "counter");
-          return;
-        }
         obj.style.bottom = `${parseInt(bottom) - fallAmount}%`;
-      } else if (
-        obj.classList.contains("platform") &&
-        !obj.classList.contains("doodler")
-      ) {
+      } else if (obj.classList.contains("platform")) {
         obj.style.display = "none"; // Remove platform when out of view
         clearInterval(fallInterval); // Clear interval when platform is removed
-      } else if (
-        obj.classList.contains("doodler") &&
-        !isOnPlatform() &&
-        startTimer
-      ) {
-        startTimer = false;
-      } else if (!startTimer) {
-        clearInterval(fallInterval);
-        endGame(); // Trigger game over when doodler hits the bottom
       }
     }, time);
     intervals.push(fallInterval); // Store interval IDs
+  }
+
+  // Smooth jump using bottom style
+  function jumpDoodler() {
+    let doodlerBottom = parseInt(doodler.style.bottom) || 5;
+    const doodlerRect = doodler.getBoundingClientRect();
+    const gridRect = grid.getBoundingClientRect();
+
+    let jumpHeight = 200;
+    let isJumping = true;
+    let startTime = null;
+
+    function jump(timestamp) {
+      if (!startTime) startTime = timestamp;
+      let progress = timestamp - startTime;
+      let jumpProgress = Math.min(progress / 5, jumpHeight);
+
+      // Move up until reaching the peak of the jump
+      if (isJumping && jumpProgress < jumpHeight) {
+        doodler.style.bottom = `${doodlerBottom + jumpProgress}px`; // Update the bottom directly
+        requestAnimationFrame(jump);
+      } else {
+        isJumping = false;
+        // Once the jump is complete, start falling
+        fallDoodler();
+      }
+    }
+
+    // Call jump animation
+    requestAnimationFrame(jump);
+  }
+
+  // Fall after the jump
+  function fallDoodler() {
+    let doodlerBottom = parseInt(doodler.style.bottom);
+    let isFalling = true;
+    let startTime = null;
+    let fallHeight = Math.max(grid.clientHeight, 200);
+    let gravity = 2; // Fall speed
+
+    function fall(timestamp) {
+      if (!startTime) startTime = timestamp;
+      let progress = timestamp - startTime;
+      let fallProgress = Math.min(progress / 5, fallHeight);
+
+      // Move down
+      if (isFalling) {
+        doodler.style.bottom = `${doodlerBottom - fallProgress}px`;
+
+        //Check if doodler is at bottom of grid
+        const doodlerRect = doodler.getBoundingClientRect();
+        const gridRect = grid.getBoundingClientRect();
+
+        const platforms = document.querySelectorAll(".platform");
+
+        let isOnPlatform = [...platforms].some((platform) => {
+          const platformRect = platform.getBoundingClientRect();
+          const isDoodlerOnPlatform =
+            doodlerRect.bottom >= platformRect.top - 5 &&
+            doodlerRect.bottom <= platformRect.top + 5 &&
+            doodlerRect.left + doodlerRect.width > platformRect.left &&
+            doodlerRect.left < platformRect.left + platformRect.width;
+
+          if (isDoodlerOnPlatform) {
+            return true;
+          }
+        });
+
+        if (isOnPlatform) {
+          isFalling = false;
+          jumpDoodler();
+          counter++;
+          document.querySelector(".counter").innerHTML = counter;
+          return;
+        }
+
+        if (doodlerRect.bottom + 20 >= gridRect.bottom) {
+          isFalling = false;
+          debugger;
+          endGame(); // End game if doodler hits the bottom
+        } else {
+          requestAnimationFrame(fall);
+          debugger;
+        }
+      }
+    }
+
+    // Call fall animation
+    requestAnimationFrame(fall);
   }
 
   // End game and clear all intervals
@@ -153,8 +198,13 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Initialize the game by creating the doodler and platforms
-  createDoodler();
-  createInitialPlatforms(); // Create the first platforms when the game starts
-  addPlatforms(); // Add new platforms over time
+  function startGame() {
+    createDoodler();
+    createInitialPlatforms();
+    addPlatforms();
+
+    jumpDoodler();
+  }
+
+  startGame();
 });

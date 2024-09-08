@@ -1,5 +1,10 @@
 
-
+.container {
+    display: flex;
+    flex-direction: column;
+    align-content: center;
+    height: 100vh;
+}
 .grid {
     background-color: aliceblue;
     width: 400px;
@@ -7,6 +12,7 @@
     position: relative;
     font-size: 100px;
     text-align: center;
+    margin: auto;
 }
 
 .doodler {
@@ -27,4 +33,23 @@
     transform: translate(-50%);
     background-image: url('dashboard-banner.jpg');
     position: absolute;
+}
+
+.counter {
+    font-size: 42px;
+    font-weight: bolder;
+    text-align: center;
+}
+
+.blink {
+    animation: animateBlink 1s linear infinite;
+}
+
+@keyframes animateBlink {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0;
+    }
 }

@@ -1,8 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
   const grid = document.querySelector(".grid");
   const doodler = document.createElement("div");
-  let isGameOver = false;
-  let startTimer = true;
   let intervals = [];
 
   let counter = 0;
@@ -12,12 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
     doodler.classList.add("doodler");
     doodler.style.bottom = "5%";
     grid.appendChild(doodler);
-    document.querySelector(".counter").innerHTML = counter;
-
-    // setTimeout(() => {
-    //   doodler.style.bottom = `${parseInt(doodler.style.bottom) + 40}%`;
-    //   fall(doodler, 20, 1); // Doodler starts falling
-    // }, 300);
+    document.querySelector(".counter").innerHTML = 0;
   }
 
   // Create initial platforms programmatically
@@ -43,6 +36,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Create a new platform at a random position
   function addPlatform() {
+    const platformTypes = ["BLINK", "NORMAL"];
     const platform = document.createElement("div");
     platform.classList.add("platform");
     grid.appendChild(platform);
@@ -50,6 +44,23 @@ document.addEventListener("DOMContentLoaded", () => {
     const { left } = generateRandomPosition();
     platform.style.left = `${left}%`;
     platform.style.bottom = "100%";
+
+    // Randomly choose a platform type
+    const platformType =
+      platformTypes[Math.floor(Math.random() * platformTypes.length)];
+
+    if (platformType === "BLINK") {
+      platform.classList.add("blink");
+      platform.style.backgroundColor = "red";
+
+      // Generate random ms between 1 and 5 seconds
+      const randomTime = Math.floor(Math.random() * 6000) + 2000;
+
+      setTimeout(() => {
+        platform.style.display = "none";
+        platform.remove();
+      }, randomTime);
+    }
 
     fall(platform, Math.floor(Math.random() * 51) + 50, 1);
   }
@@ -68,12 +79,15 @@ document.addEventListener("DOMContentLoaded", () => {
   // Control movement: left, right, and up
   function moveLeft() {
     let left = parseInt(doodler.style.left) || 50;
-    doodler.style.left = `${parseInt(left) - 10}%`;
+    const shouldMove = left > 10;
+
+    shouldMove ? (doodler.style.left = `${left - 10}%`) : null;
   }
 
   function moveRight() {
-    let left = doodler.style.left || 50;
-    doodler.style.left = `${parseInt(left) + 10}%`;
+    let left = parseInt(doodler.style.left) || 50;
+    const shouldMove = left + 10 <= 90;
+    shouldMove ? (doodler.style.left = `${left + 10}%`) : null;
   }
 
   // Make an object fall at the specified interval
@@ -166,11 +180,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (doodlerRect.bottom + 20 >= gridRect.bottom) {
           isFalling = false;
-          debugger;
+
           endGame(); // End game if doodler hits the bottom
         } else {
           requestAnimationFrame(fall);
-          debugger;
         }
       }
     }
@@ -179,12 +192,22 @@ document.addEventListener("DOMContentLoaded", () => {
     requestAnimationFrame(fall);
   }
 
-  // End game and clear all intervals
+  // End game and reset all values
   function endGame() {
-    isGameOver = true;
     intervals.forEach(clearInterval); // Clear all intervals
-    alert("Game Over!");
-    location.reload(); // Reload the page
+
+    // Clear all platforms
+    document.querySelectorAll(".platform").forEach((platform) => {
+      platform.remove();
+    });
+
+    // Reset doodler position
+    doodler.style.bottom = "5%";
+    doodler.style.left = "50%";
+
+    startTimer = true;
+    intervals = [];
+    counter = 0;
   }
 
   // Handle key events to control movement
@@ -206,5 +229,5 @@ document.addEventListener("DOMContentLoaded", () => {
     jumpDoodler();
   }
 
-  startGame();
+  document.querySelector(".start").addEventListener("click", startGame);
 });

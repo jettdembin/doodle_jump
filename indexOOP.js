@@ -88,7 +88,6 @@ document.addEventListener("DOMContentLoaded", () => {
       this.doodler.doodler.style.bottom = "5%";
       this.doodler.doodler.style.left = "50%";
 
-      this.startTimer = true;
       this.intervals = [];
       this.counter = 0;
     };
@@ -102,7 +101,10 @@ document.addEventListener("DOMContentLoaded", () => {
       document.querySelector(".grid").appendChild(this.doodler);
       document.querySelector(".counter").innerHTML = 0;
       this.game = game;
-      this.jumpDoodler();
+
+      document.querySelector(".start").addEventListener("click", () => {
+        this.jumpDoodler();
+      });
 
       // Handle key events to control movement
       document.addEventListener("keydown", (e) => {
@@ -117,8 +119,17 @@ document.addEventListener("DOMContentLoaded", () => {
     // Smooth jump using bottom style
     jumpDoodler = (type) => {
       let doodlerBottom = parseInt(this.doodler.style.bottom) || 5;
+      const doodlerRect = this.doodler.getBoundingClientRect();
+      const gridRect = document.querySelector(".grid").getBoundingClientRect();
 
-      let jumpHeight = type === "SPRING" ? 300 : 200;
+      let jumpHeight =
+        type === "SPRING"
+          ? Math.abs(gridRect.top - doodlerRect.top) > 300
+            ? 300
+            : Math.abs(gridRect.top - doodlerRect.top)
+          : Math.abs(gridRect.top - doodlerRect.top) > 200
+          ? 200
+          : Math.abs(gridRect.top - doodlerRect.top);
       let isJumping = true;
       let startTime = null;
 
@@ -170,6 +181,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
           const platforms = document.querySelectorAll(".platform");
 
+          let platformDoodlerIsOn = null;
+
           let isOnPlatform = [...platforms].some((platform) => {
             const platformRect = platform.getBoundingClientRect();
             const isDoodlerOnPlatform =
@@ -179,19 +192,21 @@ document.addEventListener("DOMContentLoaded", () => {
               doodlerRect.left < platformRect.left + platformRect.width;
 
             if (isDoodlerOnPlatform) {
-              return { isOnPlatform: true, platform: platform };
+              platformDoodlerIsOn = platform;
+              return isDoodlerOnPlatform;
             }
           });
 
-          if (isOnPlatform.isOnPlatform) {
+          if (isOnPlatform) {
             isFalling = false;
-            if (isOnPlatform.platform.classList.contains("spring")) {
+            this.game.counter++;
+            document.querySelector(".counter").innerHTML = this.game.counter;
+            if (platformDoodlerIsOn.classList.contains("spring")) {
               this.jumpDoodler("SPRING");
             } else {
               this.jumpDoodler();
             }
-            this.counter++;
-            document.querySelector(".counter").innerHTML = this.counter;
+
             return;
           }
 
@@ -272,5 +287,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   const game = new Game();
-  game.startGame();
+  document.querySelector(".start").addEventListener("click", () => {
+    game.startGame();
+  });
 });

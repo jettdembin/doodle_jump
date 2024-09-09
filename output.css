@@ -8635,8 +8635,12 @@ html:has(.drawer-open.drawer-open) {
   display: none;
 }
 
-.h-screen {
-  height: 100vh;
+.h-96 {
+  height: 24rem;
+}
+
+.w-72 {
+  width: 18rem;
 }
 
 .w-\[this-is\\\\\] {
@@ -9619,11 +9623,6 @@ html:has(.drawer-open.drawer-open) {
   background-color: rgb(255 0 0 / var(--tw-bg-opacity));
 }
 
-.bg-slate-100 {
-  --tw-bg-opacity: 1;
-  background-color: rgb(241 245 249 / var(--tw-bg-opacity));
-}
-
 .bg-white {
   --tw-bg-opacity: 1;
   background-color: rgb(255 255 255 / var(--tw-bg-opacity));
@@ -10287,19 +10286,16 @@ html:has(.drawer-open.drawer-open) {
 * {
   margin: 0;
   padding: 0;
+  box-sizing: border-box;
 }
 
 .bg {
-  width: 100%;
-  height: 100vh;
-  overflow: hidden;
-  background-color: #000033;
+  position: relative;
+  width: 100vw;
+  height: 600px;
   transform-style: preserve-3d;
   transform: translate3d(0, 0, 0);
-  /* -ms-transition: background-color 3s ease-in-out 2s;
-  -moz-transition: background-color 3s ease-in-out 2s;
-  -webkit-transition: background-color 3s ease-in-out 2s;
-  transition: background-color 3s ease-in-out 2s; */
+  transition: background-color 3s ease-in-out 2s;
   -o-perspective: 1000px;
   -ms-perspective: 1000px;
   perspective: 1000px;
@@ -10309,7 +10305,8 @@ html:has(.drawer-open.drawer-open) {
   position: absolute;
   z-index: -1;
   width: 135%;
-  height: 135%;
+  height: 300%;
+  min-height: 100vh;
   top: 0%;
   left: 0;
   content: "";
@@ -10340,8 +10337,6 @@ html:has(.drawer-open.drawer-open) {
 
 .grid {
   background-color: aliceblue;
-  width: 400px;
-  height: 500px;
   position: relative;
   font-size: 100px;
   text-align: center;

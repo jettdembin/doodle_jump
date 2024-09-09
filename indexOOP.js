@@ -90,6 +90,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       this.intervals = [];
       this.counter = 0;
+      document.querySelector(".counter").innerHTML = 0;
     };
   }
 
@@ -136,7 +137,10 @@ document.addEventListener("DOMContentLoaded", () => {
       const jump = (timestamp) => {
         if (!startTime) startTime = timestamp;
         let progress = timestamp - startTime;
-        let jumpProgress = Math.min(progress / 5, jumpHeight);
+        let jumpProgress = Math.min(
+          progress / (type === "SPRING" ? 2 : 5),
+          jumpHeight
+        );
 
         // Move up until reaching the peak of the jump
         if (isJumping && jumpProgress < jumpHeight) {
@@ -271,8 +275,6 @@ document.addEventListener("DOMContentLoaded", () => {
     constructor(left, bottom) {
       super(left, bottom);
       this.platform.classList.add("blink");
-      this.platform.style.backgroundColor = "red";
-      this.platform.style.display = "none";
       this.randomTime = Math.floor(Math.random() * 6000) + 2000;
     }
   }

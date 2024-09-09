@@ -10374,6 +10374,10 @@ html:has(.drawer-open.drawer-open) {
   animation: animateBlink 1s linear infinite;
 }
 
+.spring {
+  background: green;
+}
+
 @keyframes animateBlink {
   0%,
   100% {

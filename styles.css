@@ -182,6 +182,10 @@
   animation: animateBlink 1s linear infinite;
 }
 
+.spring {
+  background: green;
+}
+
 @keyframes animateBlink {
   0%,
   100% {

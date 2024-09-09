@@ -276,6 +276,10 @@ document.addEventListener("DOMContentLoaded", () => {
       super(left, bottom);
       this.platform.classList.add("blink");
       this.randomTime = Math.floor(Math.random() * 6000) + 2000;
+
+      setTimeout(() => {
+        this.platform.style.display = "none";
+      }, this.randomTime);
     }
   }
 
